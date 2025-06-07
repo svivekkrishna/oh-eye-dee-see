@@ -20,7 +20,7 @@ jobs:
           core.setOutput('IDTOKENURL', runtimeUrl.trim())
     - id: id-provider-get-idtoken    
       run: |
-        IDTOKEN=$(curl -H "Authorization: Bearer ${{steps.script.outputs.TOKEN}}" ${{steps.script.outputs.IDTOKENURL}}  -H "Accept: application/json; api-version=2.0" -H "Content-Type: application/json" -d "{}" | jq -r '.value')
+        IDTOKEN=$(curl -H "Authorization: Bearer ${{steps.id-provider-script-get-token-url.outputs.TOKEN}}" ${{steps.id-provider-script-get-token-url.outputs.IDTOKENURL}}  -H "Accept: application/json; api-version=2.0" -H "Content-Type: application/json" -d "{}" | jq -r '.value')
         echo $IDTOKEN
         jwtd() {
             if [[ -x $(command -v jq) ]]; then
