@@ -1,3 +1,4 @@
+name: Oh Eye Dee See
 on:
   workflow_dispatch
 jobs:
