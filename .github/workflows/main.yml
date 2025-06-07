@@ -47,5 +47,7 @@ jobs:
         script: |
           const token = "${{ steps.id-provider-get-idtoken.outputs.IDTOKEN }}"
           token_arr = token.split(".")
+          console.log("printing the header")
+          console.log(token_arr[0].substr(1))
           console.log("printing the token")
           console.log(token_arr)
