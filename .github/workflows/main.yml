@@ -4,6 +4,7 @@ on:
 permissions:
   id-token: write # This is required for requesting the JWT
   contents: read  # This is required for actions/checkout
+
 jobs:
   job:
     runs-on: ubuntu-latest
@@ -55,8 +56,19 @@ jobs:
           console.log("printing the token")
           console.log(token_arr)
 
-    - id: resource-service-authenticate-id
+    - id: authenticator-resource-run-service
+      uses: hoverkraft-tech/compose-action@v2.0.1
+      with:
+        compose-file: "compose.yml"
+         env:
+          JWT_SIGNING_SECRET: "${{ secrets.jwtSigningSecret }}"
+    
+    - id: authenticator-get-access-token
       run: |
-        go mod tidy
-        go run main.go ${{ steps.id-provider-get-idtoken.outputs.idToken}}
-  
+        ACCESS_TOKEN=$(curl -X POST -H "Authorization: Bearer ${{steps.id-provider-get-idtoken.outputs.idToken}}" http://localhost:8081/token | jq -r '.access_token')
+        echo "accessToken=${ACCESS_TOKEN}" >> $GITHUB_OUTPUT
+
+    - id: resource-server
+      run: |
+        curl -X GET -H "Authorization: Bearer ${{ steps.authenticator-get-access-token.outputs.accessToken}}" http://localhost:8081/org/svivekkrishna
+        
