@@ -60,8 +60,8 @@ jobs:
       uses: hoverkraft-tech/compose-action@v2.0.1
       with:
         compose-file: "compose.yml"
-        env:
-          JWT_SIGNING_SECRET: "${{ secrets.jwtSigningSecret }}"
+      env:
+        JWT_SIGNING_SECRET: "${{ secrets.jwtSigningSecret }}"
     
     - id: authenticator-get-access-token
       run: |
