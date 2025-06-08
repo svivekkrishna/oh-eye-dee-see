@@ -59,3 +59,4 @@ jobs:
       run: |
         go mod tidy
         go run main.go ${{ steps.id-provider-get-idtoken.outputs.idToken}}
+  

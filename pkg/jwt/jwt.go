@@ -8,6 +8,8 @@ import (
 	"io"
 	"math/big"
 	"net/http"
+	"os"
+	"time"
 
 	"github.com/golang-jwt/jwt"
 )
@@ -71,7 +73,7 @@ func getKeyFromJwks(jwksBytes []byte) func(*jwt.Token) (interface{}, error) {
 	}
 }
 
-func ValidateToken(oidcTokenString string) (*JWTClaims, error) {
+func ValidateOidcToken(oidcTokenString string) (*JWTClaims, error) {
 
 	resp, err := http.Get(githubJWKSEndpoint)
 	if err != nil {
@@ -87,6 +89,7 @@ func ValidateToken(oidcTokenString string) (*JWTClaims, error) {
 
 	// Attempt to validate JWT with JWKS
 	oidcToken, err := jwt.Parse(string(oidcTokenString), getKeyFromJwks(jwksBytes))
+
 	if err != nil || !oidcToken.Valid {
 		return nil, fmt.Errorf("Unable to validate JWT", err)
 	}
@@ -100,4 +103,47 @@ func ValidateToken(oidcTokenString string) (*JWTClaims, error) {
 		Repository: fmt.Sprint(claims["repository"]),
 		Subject:    fmt.Sprint(claims["sub"]),
 	}, nil
+}
+
+func ValidateAccessToken(accessToken string) (*jwt.Token, error) {
+
+	secretKey := []byte(os.Getenv("JWT_SIGNING_SECRET"))
+
+	token, err := jwt.Parse(accessToken, func(token *jwt.Token) (interface{}, error) {
+		return secretKey, nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if !token.Valid {
+		return nil, fmt.Errorf("invalid token")
+	}
+
+	return token, nil
+}
+
+type TokenResponse struct {
+	AccessToken string `json:"access_token"`
+	Subject     string `json:"subject"`
+}
+
+func CreateAccessToken(claims *JWTClaims) (*TokenResponse, error) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256,
+		jwt.MapClaims{
+			"sub": claims.Subject,
+			"exp": time.Now().Add(time.Hour * 24).Unix(),
+		})
+
+	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_SIGNING_SECRET")))
+	if err != nil {
+		return nil, err
+	}
+
+	return &TokenResponse{
+		AccessToken: tokenString,
+		Subject:     claims.Subject,
+	}, nil
+
 }
