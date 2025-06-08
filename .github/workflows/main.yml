@@ -60,7 +60,7 @@ jobs:
       uses: hoverkraft-tech/compose-action@v2.0.1
       with:
         compose-file: "compose.yml"
-         env:
+        env:
           JWT_SIGNING_SECRET: "${{ secrets.jwtSigningSecret }}"
     
     - id: authenticator-get-access-token
@@ -71,4 +71,3 @@ jobs:
     - id: resource-server
       run: |
         curl -X GET -H "Authorization: Bearer ${{ steps.authenticator-get-access-token.outputs.accessToken}}" http://localhost:8081/org/svivekkrishna
-        
